@@ -91,3 +91,4 @@ Next, we create the CART model using the `rpart` function.
 # Further Reading
 ## Appendix
 1. <http://www.learnbymarketing.com/481/decision-tree-flavors-gini-info-gain/>
+2. <https://medium.com/machine-learning-guy/an-introduction-to-decision-tree-learning-id3-algorithm-54c74eb2ad55>
