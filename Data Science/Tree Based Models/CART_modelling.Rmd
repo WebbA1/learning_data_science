@@ -1,0 +1,93 @@
+---
+title: "Tree Based Models"
+author: "Aaron Webb"
+date: "8 October 2019"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float:
+      collapsed: TRUE
+      smooth_scroll: TRUE
+---
+
+# Decision Trees
+## Why use this method
+Decision trees are great methods to use when we have categorical data. Either the 
+objective value (dependent variable) has discrete output values, or the independent 
+variables are easily sorted into categories.  
+
+There are two different types of decision trees, the CART modelling or the ID3.
+
+1. **Classification and Regression Tree (CART) Modelling**  
+CART modelling refers to decision tree algorithms that can be used for 
+classification or regression predictive modelling problems.  
+For classification the *gini index * method used to provide an indication of how
+pure each leaf is.
+It favours larger partitions 
+
+
+Use this method if you want your results to be in a classification.
+
+2. **Iterative Dichotomiser 3 (ID3)**  
+ID3 prefers much smaller partitions, it uses entropy and information gain calculations
+in order to create the tree.
+Entropy measures the importance of information relative to its size. Put simiply,
+we are measuring the chaos from a variable. If we imagine a varible with only 2 values, 
+and there is an even amount, the entropy value will be 0.5. 
+$$ Entropy(x) = -p_ilog_2(p_i) + -p_jlog_2(p_j)$$ 
+Information gain is where we derive the original entropy of the population to 
+measure the information gain of each variable. 
+
+## Fundamentals 
+The first node in the diagram is called the root node. Each node represents a single input
+variable.
+The leaf node is where the path of each node ends, which provides us with a class prediction.
+
+To begin, we need to pick the variable that minimises a cost function. This split 
+is then used as the root node. We then continue, moving onto the next node, minimising 
+the cost function for the new set of data that has been created from the split.
+
+For *regression predictive* modelling problems the cost function that is minimised
+to choose the split points (nodes) is the sum squared errors across the training samples.
+The cost function that we need to minimise is:
+
+$$ \sum_{i=1}^{n}\left(y - prediction\right)^2 $$
+Where **y** is the training sample and the **prediction** is the predicted output for the model, 
+the output from one of the leafs. 
+
+
+
+
+# Code
+## Packages
+The main CART modelling packages is `rpart`. 
+
+```{r install packages}
+library(rpart)
+```
+
+## Example in R
+Using the example data set, `car90` in the `rpart` package, we can create a CART model 
+to help us decide and predict the price of a car.
+This is by the `str` function too, which provides us with a summary of the variables 
+in the data set. 
+
+Need to clean the data of any NAs.
+Make sure we take 30% of the data for testing.
+
+```{r createTheData}
+data <- rpart::car90
+str(data)
+```
+
+Next, we create the CART model using the `rpart` function. 
+
+
+
+
+
+
+
+# Further Reading
+## Appendix
+1. <http://www.learnbymarketing.com/481/decision-tree-flavors-gini-info-gain/>
