@@ -26,7 +26,8 @@ pure each leaf is.
 It favours larger partitions 
 
 
-Use this method if you want your results to be in a classification.
+When using the `rpart` library in R, it will automatically choose whether to choose classification or regression
+dependent on the dependent variable.
 
 2. **Iterative Dichotomiser 3 (ID3)**  
 ID3 prefers much smaller partitions, it uses entropy and information gain calculations
@@ -83,6 +84,12 @@ str(data)
 Next, we create the CART model using the `rpart` function. 
 
 
+Interepting the output from `printcp`:
+ + The *Root Node Error* is the percent of correctly sorted records at the first node split.   
+ + The *Rel Error* is 1-R^2, the root mean square error. This is the error for predictions of the data that were used to
+   estimate the model
+ + The *X-error* is the cross validated error.
+
 
 
 
@@ -92,3 +99,6 @@ Next, we create the CART model using the `rpart` function.
 ## Appendix
 1. <http://www.learnbymarketing.com/481/decision-tree-flavors-gini-info-gain/>
 2. <https://medium.com/machine-learning-guy/an-introduction-to-decision-tree-learning-id3-algorithm-54c74eb2ad55>
+3. <https://stackoverflow.com/questions/9666212/how-to-compute-error-rate-from-a-decision-tree>
+4. <https://community.alteryx.com/t5/Alteryx-Designer-Knowledge-Base/Understanding-the-Outputs-of-the-Decision-Tree-Tool/ta-p/144773>
+5. <https://cran.r-project.org/web/packages/rpart/vignettes/longintro.pdf>
