@@ -23,11 +23,12 @@ CART modelling refers to decision tree algorithms that can be used for
 classification or regression predictive modelling problems.  
 For classification the *gini index * method used to provide an indication of how
 pure each leaf is.
-It favours larger partitions 
+It favours larger partitions.  
+The regression splitting criterion is the anova method. The equation for this is:
+$$ SS_T - (SS_L + SS_R) $$
+This is the equivalent of choosing the splitto maximise the between groups sum-of-squares.
 
 
-When using the `rpart` library in R, it will automatically choose whether to choose classification or regression
-dependent on the dependent variable.
 
 2. **Iterative Dichotomiser 3 (ID3)**  
 ID3 prefers much smaller partitions, it uses entropy and information gain calculations
@@ -35,9 +36,15 @@ in order to create the tree.
 Entropy measures the importance of information relative to its size. Put simiply,
 we are measuring the chaos from a variable. If we imagine a varible with only 2 values, 
 and there is an even amount, the entropy value will be 0.5. 
-$$ Entropy(x) = -p_ilog_2(p_i) + -p_jlog_2(p_j)$$ 
+$$ Entropy(x) = -p_ilog_2(p_i) + -p_jlog_2(p_j) $$ 
 Information gain is where we derive the original entropy of the population to 
 measure the information gain of each variable. 
+
+
+When using the `rpart` library in R, it will automatically choose whether to choose classification or regression
+dependent on the dependent variable.  
+Also, the `parms` arguement in `rpart` allows you to choose between the *gini index* 
+or the *information gain* method.
 
 ## Fundamentals 
 The first node in the diagram is called the root node. Each node represents a single input
@@ -84,11 +91,12 @@ str(data)
 Next, we create the CART model using the `rpart` function. 
 
 
+All about the *Complexity Parameter*. That determines how complex your decision tree is.
+
 Interepting the output from `printcp`:
- + The *Root Node Error* is the percent of correctly sorted records at the first node split.   
- + The *Rel Error* is 1-R^2, the root mean square error. This is the error for predictions of the data that were used to
-   estimate the model
- + The *X-error* is the cross validated error.
+* The *Root Node Error* is the percent of correctly sorted records at the first node split.   
+* The *Rel Error* is 1-R^2, the root mean square error. This is the error for predictions of the data that were used to estimate the model
+* The *X-error* is the cross validated error.
 
 
 

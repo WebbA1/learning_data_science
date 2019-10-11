@@ -299,11 +299,18 @@ div.tocify {
 <h1>Decision Trees</h1>
 <div id="why-use-this-method" class="section level2">
 <h2>Why use this method</h2>
+<p>Decision trees are great methods to use when we have categorical data. Either the objective value (dependent variable) has discrete output values, or the independent variables are easily sorted into categories.</p>
 <p>There are two different types of decision trees, the CART modelling or the ID3.</p>
 <ol style="list-style-type: decimal">
-<li><p><strong>Classification and Regression Tree (CART) Modelling </strong> CART modelling refers to decision tree algorithms that can be used for classification or regression predictive modelling problems. Use this method if you want your results to be in a classification.</p></li>
-<li><p><strong>Iterative Dichotomiser 3 (ID3) </strong></p></li>
+<li><p><strong>Classification and Regression Tree (CART) Modelling</strong><br />
+CART modelling refers to decision tree algorithms that can be used for classification or regression predictive modelling problems.<br />
+For classification the <em>gini index </em> method used to provide an indication of how pure each leaf is. It favours larger partitions.<br />
+The regression splitting criterion is the anova method. The equation for this is: <span class="math display">\[ SS_T - (SS_L + SS_R) \]</span> This is the equivalent of choosing the splitto maximise the between groups sum-of-squares.</p></li>
+<li><p><strong>Iterative Dichotomiser 3 (ID3)</strong><br />
+ID3 prefers much smaller partitions, it uses entropy and information gain calculations in order to create the tree. Entropy measures the importance of information relative to its size. Put simiply, we are measuring the chaos from a variable. If we imagine a varible with only 2 values, and there is an even amount, the entropy value will be 0.5. <span class="math display">\[ Entropy(x) = -p_ilog_2(p_i) + -p_jlog_2(p_j) \]</span> Information gain is where we derive the original entropy of the population to measure the information gain of each variable.</p></li>
 </ol>
+<p>When using the <code>rpart</code> library in R, it will automatically choose whether to choose classification or regression dependent on the dependent variable.<br />
+Also, the <code>parms</code> arguement in <code>rpart</code> allows you to choose between the <em>gini index</em> or the <em>information gain</em> method.</p>
 </div>
 <div id="fundamentals" class="section level2">
 <h2>Fundamentals</h2>
@@ -362,6 +369,8 @@ str(data)</code></pre>
 ##  $ Wheel.base  : num  102 109 106 100 101 109 105 111 111 108 ...
 ##  $ Width       : num  67 69 71 67 65 69 69 72 72 71 ...</code></pre>
 <p>Next, we create the CART model using the <code>rpart</code> function.</p>
+<p>Interepting the output from <code>printcp</code>: * The <em>Root Node Error</em> is the percent of correctly sorted records at the first node split.<br />
+* The <em>Rel Error</em> is 1-R^2, the root mean square error. This is the error for predictions of the data that were used to estimate the model * The <em>X-error</em> is the cross validated error.</p>
 </div>
 </div>
 <div id="further-reading" class="section level1">
@@ -370,6 +379,10 @@ str(data)</code></pre>
 <h2>Appendix</h2>
 <ol style="list-style-type: decimal">
 <li><a href="http://www.learnbymarketing.com/481/decision-tree-flavors-gini-info-gain/" class="uri">http://www.learnbymarketing.com/481/decision-tree-flavors-gini-info-gain/</a></li>
+<li><a href="https://medium.com/machine-learning-guy/an-introduction-to-decision-tree-learning-id3-algorithm-54c74eb2ad55" class="uri">https://medium.com/machine-learning-guy/an-introduction-to-decision-tree-learning-id3-algorithm-54c74eb2ad55</a></li>
+<li><a href="https://stackoverflow.com/questions/9666212/how-to-compute-error-rate-from-a-decision-tree" class="uri">https://stackoverflow.com/questions/9666212/how-to-compute-error-rate-from-a-decision-tree</a></li>
+<li><a href="https://community.alteryx.com/t5/Alteryx-Designer-Knowledge-Base/Understanding-the-Outputs-of-the-Decision-Tree-Tool/ta-p/144773" class="uri">https://community.alteryx.com/t5/Alteryx-Designer-Knowledge-Base/Understanding-the-Outputs-of-the-Decision-Tree-Tool/ta-p/144773</a></li>
+<li><a href="https://cran.r-project.org/web/packages/rpart/vignettes/longintro.pdf" class="uri">https://cran.r-project.org/web/packages/rpart/vignettes/longintro.pdf</a></li>
 </ol>
 </div>
 </div>
