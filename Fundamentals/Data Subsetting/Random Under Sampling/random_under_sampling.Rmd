@@ -1,0 +1,59 @@
+---
+title: "Random Under Sampling"
+author: "Aaron Webb"
+date: "08/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Random Under Sampling
+If our dataset is heavily imbalanced, we can create a new sub sample dataset to help avoid overfitting in the model.
+
+
+Firstly, we need to determine how imbalanced our class (dependent variable) is.
+Once we have determined how many instances are considered positive (The heavily outnumbered outcome), we will want to
+create a new sub sample with the same number of negative values as positive values. This will create a 50/50 split.
+
+
+After implementing the split, we will have a new sub sample to create our models with. The next stage is to then shuffle the
+data to see if our models can maintain a certain accuracy everytime we run the script and model.
+
+The main issue with 'Random Under Sampling' is that we run the risk of our classification model not performing as accurate as we would like,
+since we have removed a large number of instances, leading to a large amount of information loss. However, this is required in order to avoid
+overfitting in the model
+
+## Example
+```{r}
+data <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Data Science/Examples/Credit Card Fraud/Data/creditcard.csv")
+data$Class <- as.factor(data$Class)
+
+summary(data$Class)
+```
+
+As we can see, there is a large differences between the values in the Class variable.
+Therefore, we can use random under sampling to create a balance sub sample
+
+```{r}
+sub_sample <- data %>%
+  filter(Class == 1)
+sub_sample
+```
+
+We've extracted the positive cases of the varible. Now it's time to extract a random equal amount of negative cases.
+
+```{r}
+negative_cases <- data %>%
+  filter(Class == 0)
+random_rows <- sample(nrow(negative_cases), 
+                      size = nrow(sub_sample))
+negative_cases <- negative_cases[random_rows, ]
+
+sub_sample <- bind_rows(sub_sample, negative_cases)
+summary(sub_sample$Class)
+```
+
+
