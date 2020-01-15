@@ -1,0 +1,16 @@
+Creating Dummy Variables in Caret
+
+Caret has a built in function to change categorical values into numeric ones.
+This can be done with two lines of code.
+
+dmy <- dummyVars(" ~ .", data = data)
+dummy_data <- data.frame(predict(dmy, newdata = data))
+
+You can select specific columns by adding them after the tilda.
+
+If the full.rank parameter is TRUE, then the function will not create a column for
+all the values, creating one less variable than the number of categories present.
+This means avoiding the dummy variable trap.
+
+Reference:
+http://amunategui.github.io/dummyVar-Walkthrough/
