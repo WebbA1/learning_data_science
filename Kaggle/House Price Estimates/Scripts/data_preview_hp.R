@@ -6,18 +6,19 @@ library(anomalize)
 library(corrplot)
 
 # Load in mapping for types
-types_mapping <- read_csv("./Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv") %>%
-  pull(type) %>%
-  paste(collapse = "")
+types_mapping <- read_csv("./Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
 # Load in the training dataset (Class = SalePrice)
 # TODO Define the class for each column
-hp_data <- read_csv("./Kaggle/House Price Estimates/Data/train.csv", col_types = types_mapping)
-str(hp_training_data)
+  hp_data <- read_csv("./Kaggle/House Price Estimates/Data/train.csv", 
+                    col_types = types_mapping %>%
+                      pull(class_type) %>%
+                      paste(collapse = ""))
+str(hp_data)
 
 # Converting to numeric values for the regression
-dmy <- dummyVars(" ~ .", 
+dmy <- dummyVars(" ~ .",
                  data = hp_data)
-hp_data_transformed <- data.frame(predict(dmy, 
+hp_data_transformed <- data.frame(predict(dmy,
                                           newdata = hp_data)) %>%
   as_tibble()
 
@@ -46,7 +47,8 @@ hp_training_data %>%
 
 # Variable Deep Dive ----
 # Closer look at the correlation and interation of the variables and the class
-cor()
+cor(data.frame(hp_training_data))
+
 # PCA on the variables
 # Closer look at how the numeric values affect the SalePrice
 continous_numeric_values <- hp_training_data %>%
@@ -93,3 +95,14 @@ discrete_numeric_values %>%
   ggplot(aes(x = value, y = SalePrice, colour = key, group = value)) +
   geom_boxplot() +
   facet_wrap(~key)
+
+# Look at BsmtQual
+hp_data %>%
+  select(SalePrice, starts_with("BsmtQual")) %>%
+  gather("key", "value", -SalePrice) %>%
+  ggplot(aes(x = value, y = SalePrice, colour = key, group = value)) +
+  geom_boxplot() +
+  facet_wrap(~key)
+
+
+hp_training_data$BsmtQual.Ex
