@@ -138,3 +138,6 @@ We can put this into a heat map, as display a table containing all the values in
 ### Visualisation
 
 ### PCA 
+
+### Feature Importance 
+Hashing Encoding

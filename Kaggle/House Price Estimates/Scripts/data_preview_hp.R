@@ -9,7 +9,7 @@ library(corrplot)
 types_mapping <- read_csv("./Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
 # Load in the training dataset (Class = SalePrice)
 # TODO Define the class for each column
-  hp_data <- read_csv("./Kaggle/House Price Estimates/Data/train.csv", 
+hp_data <- read_csv("./Kaggle/House Price Estimates/Data/train.csv", 
                     col_types = types_mapping %>%
                       pull(class_type) %>%
                       paste(collapse = ""))
@@ -17,16 +17,28 @@ str(hp_data)
 
 # Converting to numeric values for the regression
 dmy <- dummyVars(" ~ .",
-                 data = hp_data)
+                 data = hp_data,
+                 na.action = 0)
 hp_data_transformed <- data.frame(predict(dmy,
                                           newdata = hp_data)) %>%
-  as_tibble()
+  as_tibble() %>%
+  replace_na(list(Alley.Grvl = 0, 
+                  Alley.Pave = 0,
+                  LotFrontage = 0))
 
 # Split the data into a training and validation dataset
 set.seed(524)
 random_rows <- floor(sample(1:nrow(hp_data_transformed), size = nrow(hp_data_transformed) * 0.8))
 hp_training_data <- hp_data_transformed[random_rows, ]
 hp_validation_data <- hp_data_transformed[-random_rows, ]
+
+# Check which columns have only one unique value
+hp_training_data %>% 
+  gather("key", "value") %>% 
+  distinct() %>% 
+  group_by(key) %>% 
+  tally() %>% 
+  filter(n == 1)
 
 
 # Class Deep Dive ----
@@ -47,9 +59,31 @@ hp_training_data %>%
 
 # Variable Deep Dive ----
 # Closer look at the correlation and interation of the variables and the class
-cor(data.frame(hp_training_data))
+#correlation <- cor(data.frame(hp_training_data))
+correlation <- cor(x = hp_training_data %>%
+                     select(SalePrice),
+                   y = hp_training_data %>%
+                     select(-Id, 
+                            -SalePrice, 
+                            -starts_with("GarageYrBlt"),
+                            -starts_with("YearrBuilt"),
+                            -starts_with("YearRemodAdd"),
+                            -starts_with("YearBuilt")))
+
+correlation %>%
+  as_tibble() %>%
+  gather("key", "value") %>%
+  ggplot(aes(x = key, y = value)) +
+  geom_col()
 
 # PCA on the variables
+prcomp(hp_training_data %>%
+         select(-Condition2.RRAn,
+                -Exterior1st.BrkComm,
+                -Exterior1st.CBlock,
+                -HeatingQC.Po,
+                -YearBuilt.1882), scale = TRUE)
+
 # Closer look at how the numeric values affect the SalePrice
 continous_numeric_values <- hp_training_data %>%
   select(SalePrice, LotFrontage, LotArea, MasVnrArea, BsmtFinSF1, BsmtFinSF2,
