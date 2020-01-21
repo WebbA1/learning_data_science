@@ -94,6 +94,12 @@ hp_training_data %>%
 ## The Features
 Now that I understand the class, lets see how the features interact with it
 
+**TODO** I need to select some variables that I believe we have a large influence on the model.
+
+### Visualisation
+
+
+
 ### Correlation Analysis
 A simple correlation analysis will allow me to if there are any features that have 
 a large influence on my class.
@@ -135,7 +141,7 @@ We can put this into a heat map, as display a table containing all the values in
 ```
 
 
-### Visualisation
+
 
 ### PCA 
 

@@ -139,4 +139,19 @@ hp_data %>%
   facet_wrap(~key)
 
 
-hp_training_data$BsmtQual.Ex
+
+hp_training_data %>%
+  gather("key", "value", -SalePrice) %>%
+  filter(value != 0,
+         key %in% c("GrLivArea", "LotArea")) %>%
+  group_by(key) %>%
+  mutate(total_average = mean(value)) %>%
+  ungroup() %>%
+  group_by(SalePrice, key) %>%
+  mutate(value_index = value/total_average) %>%
+  filter(value_index < 10) %>%
+  ggplot(aes(x = value_index, y = SalePrice, colour = key)) +
+  geom_point() +
+  #facet_wrap(~key) +
+  geom_smooth(method = "auto", aes(colour = "blue")) +
+  theme_dark()
