@@ -41,13 +41,13 @@ as a factor or as an integer.
 
 ```{r importMappingTable, echo=T, results=F}
 # Type Mapping
-types_mapping <- read_csv("C:/Users/Aaron.Webb/Documents/Learning/learning_data_science/Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
+types_mapping <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
 ```
 
 Now we can use the second column in the mapping table to help with importing the data.
 
 ```{r importData}
-hp_data <- read_csv("C:/Users/Aaron.Webb/Documents/Learning/learning_data_science/Kaggle/House Price Estimates/Data/train.csv", 
+hp_data <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Data/train.csv", 
                     col_types = types_mapping %>%
                       pull(class_type) %>%
                       paste(collapse = ""))
@@ -98,6 +98,18 @@ Now that I understand the class, lets see how the features interact with it
 
 ### Visualisation
 
+Let think about some of the key determinants of house prices. 
+One of the first things that comes to mind is the area of land the house is situated on.
+In the data, this feature is called `LotArea`. Let see how it interacts with `SalePrice`
+
+```{r LotAreaScatter, warning=F}
+hp_training_data %>%
+  select(SalePrice, LotArea) %>%
+  ggplot(aes(x = LotArea, y = SalePrice)) +
+  geom_point() +
+  theme_custom()
+
+```
 
 
 ### Correlation Analysis
