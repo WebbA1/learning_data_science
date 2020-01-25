@@ -2,8 +2,6 @@
 # Library
 library(tidyverse)
 library(caret)
-library(anomalize)
-library(corrplot)
 
 # Load in mapping for types
 types_mapping <- read_csv("./Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
@@ -15,22 +13,22 @@ hp_data <- read_csv("./Kaggle/House Price Estimates/Data/train.csv",
                       paste(collapse = ""))
 str(hp_data)
 
-# Converting to numeric values for the regression
-dmy <- dummyVars(" ~ .",
-                 data = hp_data,
-                 na.action = 0)
-hp_data_transformed <- data.frame(predict(dmy,
-                                          newdata = hp_data)) %>%
-  as_tibble() %>%
-  replace_na(list(Alley.Grvl = 0, 
-                  Alley.Pave = 0,
-                  LotFrontage = 0))
+# # Converting to numeric values for the regression
+# dmy <- dummyVars(" ~ .",
+#                  data = hp_data,
+#                  na.action = 0)
+# hp_data_transformed <- data.frame(predict(dmy,
+#                                           newdata = hp_data)) %>%
+#   as_tibble() %>%
+#   replace_na(list(Alley.Grvl = 0, 
+#                   Alley.Pave = 0,
+#                   LotFrontage = 0))
 
 # Split the data into a training and validation dataset
 set.seed(524)
-random_rows <- floor(sample(1:nrow(hp_data_transformed), size = nrow(hp_data_transformed) * 0.8))
-hp_training_data <- hp_data_transformed[random_rows, ]
-hp_validation_data <- hp_data_transformed[-random_rows, ]
+random_rows <- floor(sample(1:nrow(hp_data), size = nrow(hp_data) * 0.8))
+hp_training_data <- hp_data[random_rows, ]
+hp_validation_data <- hp_data[-random_rows, ]
 
 # Check which columns have only one unique value
 hp_training_data %>% 

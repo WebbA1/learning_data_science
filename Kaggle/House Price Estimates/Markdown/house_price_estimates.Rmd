@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 source("./www/ggplot_theme.R")
 library(tidyverse)
 library(caret)
-library(corrplot)
 ```
 
 # Introduction to the Project
@@ -41,16 +40,22 @@ as a factor or as an integer.
 
 ```{r importMappingTable, echo=T, results=F}
 # Type Mapping
-types_mapping <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
+#types_mapping <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
+types_mapping <- read_csv("/Users/Aaron/Documents/Data Science/learning_data_science/Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
 ```
 
 Now we can use the second column in the mapping table to help with importing the data.
 
 ```{r importData}
-hp_data <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Data/train.csv", 
+# hp_data <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Data/train.csv", 
+#                     col_types = types_mapping %>%
+#                       pull(class_type) %>%
+#                       paste(collapse = ""))
+hp_data <- read_csv("/Users/Aaron/Documents/Data Science/learning_data_science/Kaggle/House Price Estimates/Data/train.csv", 
                     col_types = types_mapping %>%
                       pull(class_type) %>%
                       paste(collapse = ""))
+
 head(hp_data)
 ```
 
@@ -87,30 +92,11 @@ This can be seen a lot clearer when we look at the distibution of **SalePrice**
 hp_training_data %>%
   select(SalePrice) %>%
   ggplot(aes(x = SalePrice)) +
-  geom_histogram(bins = 100) +
-  theme_custom()
+  geom_histogram(bins = 100) 
 ```
 
 ## The Features
 Now that I understand the class, lets see how the features interact with it
-
-**TODO** I need to select some variables that I believe we have a large influence on the model.
-
-### Visualisation
-
-Let think about some of the key determinants of house prices. 
-One of the first things that comes to mind is the area of land the house is situated on.
-In the data, this feature is called `LotArea`. Let see how it interacts with `SalePrice`
-
-```{r LotAreaScatter, warning=F}
-hp_training_data %>%
-  select(SalePrice, LotArea) %>%
-  ggplot(aes(x = LotArea, y = SalePrice)) +
-  geom_point() +
-  theme_custom()
-
-```
-
 
 ### Correlation Analysis
 A simple correlation analysis will allow me to if there are any features that have 
@@ -134,25 +120,70 @@ dmy <- dummyVars(" ~ .",
                  sep = "_",
                  na_action = 0)
 
-hp_training_data_dummys <- data.frame(predict(dmy,
-                                              newdata = hp_training_data)) %>%
+hp_training_data_dummy <- data.frame(predict(dmy,
+                                             newdata = hp_training_data)) %>%
   as_tibble()
 ```
 
-Now we can conduct the correlation analysis.
+Now I can conduct the correlation analysis, and see which features have the largest effect on the class variable.
+Once I have the results from the test, I can create a histgram to visualise any features with a high correlation to the class.
 
 ```{r correlationAnalysis}
-#correlation_outputs <- cor(hp_training_data_dummys)
+correlation_outputs <- cor(x = hp_training_data_dummy %>%
+                             select(SalePrice),
+                           y = hp_training_data_dummy %>%
+                             select(-Id, -SalePrice))
+
+correlation_outputs %>%
+  as_tibble() %>%
+  gather("key", "value") %>%
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 50)
 #knitr::kable(correlation_outputs)
 ```
 
-We can put this into a heat map, as display a table containing all the values in would be too much information
+From the distribution below, lets look at at features with a correlation of 0.4 or above.
 
-```{r correlationHeatMap}
-#corrplot(correlation_outputs)
+```{r selectingCorrelatingFeatures}
+# Select the correlation values that are greater than |0.4|
+knitr::kable(correlation_outputs %>%
+               as_tibble() %>%
+               gather("Feature", "Correlation") %>%
+               filter(abs(Correlation) >= 0.4))
 ```
 
 
+### Visualisation
+I now have a list a features to look at and further determine their relationship with the class.
+
+#### Total Basement Square Footage
+```{r TotalBsmtSFScatter, warning=F}
+hp_training_data %>%
+  select(SalePrice, TotalBsmtSF) %>%
+  ggplot(aes(x = TotalBsmtSF, y = SalePrice)) +
+  geom_point()
+```
+
+There is a clear positive correlation between `SalePrice` and `TotalBsmtSF`.
+
+#### Overall Quality
+```{r OverallQuality.8BoxPlot}
+hp_training_data_dummy %>%
+  select(SalePrice, OverallQual_8) %>%
+  mutate(OverallQual_8 = factor(OverallQual_8, levels = 0:1)) %>%
+  ggplot(aes(x = `OverallQual_8`, y = SalePrice, colour = `OverallQual_8`)) +
+  geom_boxplot()
+```
+
+Difference.
+
+```{r OverallQualityBoxPlot}
+hp_training_data %>%
+  select(SalePrice, OverallQual) %>%
+  mutate(OverallQual = factor(OverallQual, levels = 1:10)) %>%
+  ggplot(aes(x = OverallQual, y = SalePrice, colour = OverallQual)) +
+  geom_boxplot()
+```
 
 
 ### PCA 
