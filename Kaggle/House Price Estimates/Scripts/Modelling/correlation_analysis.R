@@ -4,7 +4,8 @@ source("./Kaggle/House Price Estimate/Scripts/data_preview.R")
 # Converting to numeric values for the regression
 dmy <- dummyVars(" ~ .",
                  data = hp_training_data,
-                 na.action = 0)
+                 na.action = 0, 
+                 sep = "_")
 hp_training_data_dummy <- data.frame(predict(dmy,
                                              newdata = hp_training_data)) %>%
   as_tibble() %>%
@@ -38,3 +39,27 @@ correlation %>%
   gather("key", "value") %>%
   mutate(abs_value = abs(value)) %>%
   filter(abs_value >= 0.4)
+
+
+# We have a list of variabes to look at now
+hp_training_data_dummy %>%
+  ggplot(aes(x = Neighborhood_NridgHt, 
+             y = SalePrice, 
+             group = Neighborhood_NridgHt, 
+             colour = Neighborhood_NridgHt)) +
+  geom_boxplot()
+hp_training_data_dummy %>%
+  ggplot(aes(x = Neighborhood_Somerst, 
+             y = SalePrice, 
+             group = Neighborhood_Somerst, 
+             colour = Neighborhood_Somerst)) +
+  geom_boxplot()
+
+
+hp_training_data %>%
+  ggplot(aes(x = Neighborhood, 
+             y = SalePrice,
+             colour = Neighborhood)) +
+  geom_boxplot()
+
+

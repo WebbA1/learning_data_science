@@ -74,7 +74,7 @@ hp_validation_data <- hp_data[-random_rows, ]
 All the subsequent data analysis will be conducted on the training dataset, to minimise the chance of data leakage.
 
 # Introduction to the Data
-## The Class
+## The Dependent Variable
 
 The variable that I will be modelling is **SalePrice**.
 This is defined as the agreed price upon the sale of the house.
@@ -96,11 +96,11 @@ hp_training_data %>%
 ```
 
 ## The Features
-Now that I understand the class, lets see how the features interact with it
+Now that I understand the dependent variable, lets see how the features interact with it
 
 ### Correlation Analysis
 A simple correlation analysis will allow me to if there are any features that have 
-a large influence on my class.
+a large influence on my dependent variable
 However, I have two issues with my training data before I can conduct the correlation analysis.
 
 * As I have categorical values with character values in some of my features, these will need converting 
@@ -125,8 +125,8 @@ hp_training_data_dummy <- data.frame(predict(dmy,
   as_tibble()
 ```
 
-Now I can conduct the correlation analysis, and see which features have the largest effect on the class variable.
-Once I have the results from the test, I can create a histgram to visualise any features with a high correlation to the class.
+Now I can conduct the correlation analysis, and see which features have the largest effect on the dependent variable.
+Once I have the results from the test, I can create a histgram to visualise any features with a high correlation to the dependent variable
 
 ```{r correlationAnalysis}
 correlation_outputs <- cor(x = hp_training_data_dummy %>%
@@ -154,12 +154,18 @@ knitr::kable(correlation_outputs %>%
 
 
 ### Visualisation
-I now have a list a features to look at and further determine their relationship with the class.
+I now have a list a features to look at and further determine their relationship with the dependent variable.
 
 #### Total Basement Square Footage
+The first feature I will look at is the total square footage of a basement.
+Using a scatter plot is useful for seeing the relationship between the dependent variable and the select feature.
+Firstly, I should remove the zeros from the basement feature. 
+We are not interested in seeing house homes without basements affect the price of a house.
+
 ```{r TotalBsmtSFScatter, warning=F}
 hp_training_data %>%
   select(SalePrice, TotalBsmtSF) %>%
+  filter(TotalBsmtSF != 0) %>%
   ggplot(aes(x = TotalBsmtSF, y = SalePrice)) +
   geom_point()
 ```
@@ -167,24 +173,26 @@ hp_training_data %>%
 There is a clear positive correlation between `SalePrice` and `TotalBsmtSF`.
 
 #### Overall Quality
-```{r OverallQuality.8BoxPlot}
-hp_training_data_dummy %>%
-  select(SalePrice, OverallQual_8) %>%
-  mutate(OverallQual_8 = factor(OverallQual_8, levels = 0:1)) %>%
-  ggplot(aes(x = `OverallQual_8`, y = SalePrice, colour = `OverallQual_8`)) +
-  geom_boxplot()
-```
-
-Difference.
-
 ```{r OverallQualityBoxPlot}
-hp_training_data %>%
-  select(SalePrice, OverallQual) %>%
-  mutate(OverallQual = factor(OverallQual, levels = 1:10)) %>%
-  ggplot(aes(x = OverallQual, y = SalePrice, colour = OverallQual)) +
+hp_training_data_dummy %>%
+  select(SalePrice, OverallQual_8, OverallQual_9) %>%
+  gather("Feature", "Value", - SalePrice) %>%
+  mutate(Value = factor(Value, levels = 0:1)) %>%
+  ggplot(aes(x = Value, y = SalePrice)) +
+  facet_wrap(~Feature) +
   geom_boxplot()
 ```
 
+
+```{r OverallQualityBoxAllPlot}
+hp_training_data_dummy %>%
+  select(SalePrice, starts_with("OverallQual")) %>%
+  gather("Feature", "Value", - SalePrice) %>%
+  mutate(Value = factor(Value, levels = 0:1)) %>%
+  ggplot(aes(x = Value, y = SalePrice, colour = Value)) +
+  facet_wrap(~Feature) +
+  geom_boxplot()
+```
 
 ### PCA 
 
