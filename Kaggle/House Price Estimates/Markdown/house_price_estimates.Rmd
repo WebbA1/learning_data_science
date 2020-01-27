@@ -40,22 +40,16 @@ as a factor or as an integer.
 
 ```{r importMappingTable, echo=T, results=F}
 # Type Mapping
-#types_mapping <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
-types_mapping <- read_csv("/Users/Aaron/Documents/Data Science/learning_data_science/Kaggle/House Price Estimates/Inputs/identify_column_class_complete.csv")
+types_mapping <- read_csv("Inputs/identify_column_class_complete.csv")
 ```
 
 Now we can use the second column in the mapping table to help with importing the data.
 
 ```{r importData}
-# hp_data <- read_csv("C:/Users/Aaron/Documents/R/learning_data_science/Kaggle/House Price Estimates/Data/train.csv", 
-#                     col_types = types_mapping %>%
-#                       pull(class_type) %>%
-#                       paste(collapse = ""))
-hp_data <- read_csv("/Users/Aaron/Documents/Data Science/learning_data_science/Kaggle/House Price Estimates/Data/train.csv", 
+hp_data <- read_csv("Data/train.csv",
                     col_types = types_mapping %>%
                       pull(class_type) %>%
                       paste(collapse = ""))
-
 head(hp_data)
 ```
 
@@ -92,6 +86,15 @@ This can be seen a lot clearer when we look at the distibution of **SalePrice**
 hp_training_data %>%
   select(SalePrice) %>%
   ggplot(aes(x = SalePrice)) +
+  geom_histogram(bins = 100) 
+```
+
+However, there is a positive skew on my data. I can log my dependent variable to remove this to make it normally distributed.
+
+```{r histogramSalePriceLog, warning=FALSE}
+hp_training_data %>%
+  select(SalePrice) %>%
+  ggplot(aes(x = log(SalePrice))) +
   geom_histogram(bins = 100) 
 ```
 
@@ -171,24 +174,38 @@ hp_training_data %>%
 ```
 
 There is a clear positive correlation between `SalePrice` and `TotalBsmtSF`.
+However, there seems to be some outliers that could skew our data. 
+I will take a closer look at these instances, and see why they are skewing this feature.
 
-#### Overall Quality
-```{r OverallQualityBoxPlot}
-hp_training_data_dummy %>%
-  select(SalePrice, OverallQual_8, OverallQual_9) %>%
-  gather("Feature", "Value", - SalePrice) %>%
-  mutate(Value = factor(Value, levels = 0:1)) %>%
-  ggplot(aes(x = Value, y = SalePrice)) +
-  facet_wrap(~Feature) +
+```{r TotalBsmtSFBoxPlot, warning=F}
+hp_training_data %>%
+  select(SalePrice, TotalBsmtSF) %>%
+  filter(TotalBsmtSF != 0) %>%
+  ggplot(aes(x = TotalBsmtSF, y = SalePrice)) +
   geom_boxplot()
 ```
+
+Is it the roof?
+
+#### Overall Quality
+<!-- # ```{r OverallQualityBoxPlot} -->
+<!-- # hp_training_data_dummy %>% -->
+<!-- #   select(SalePrice, OverallQual_8, OverallQual_9) %>% -->
+<!-- #   gather("Feature", "Value", - SalePrice) %>% -->
+<!-- #   mutate(Value = factor(Value, levels = 0:1), -->
+<!-- #          Feature = factor(Feature, levels = paste0("OverallQual_", 1:10))) %>% -->
+<!-- #   ggplot(aes(x = Value, y = SalePrice)) + -->
+<!-- #   facet_wrap(~Feature) + -->
+<!-- #   geom_boxplot() -->
+<!-- # ``` -->
 
 
 ```{r OverallQualityBoxAllPlot}
 hp_training_data_dummy %>%
   select(SalePrice, starts_with("OverallQual")) %>%
   gather("Feature", "Value", - SalePrice) %>%
-  mutate(Value = factor(Value, levels = 0:1)) %>%
+  mutate(Value = factor(Value, levels = 0:1),
+         Feature = factor(Feature, levels = paste0("OverallQual_", 1:10))) %>%
   ggplot(aes(x = Value, y = SalePrice, colour = Value)) +
   facet_wrap(~Feature) +
   geom_boxplot()

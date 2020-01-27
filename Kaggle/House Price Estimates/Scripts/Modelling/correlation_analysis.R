@@ -62,4 +62,29 @@ hp_training_data %>%
              colour = Neighborhood)) +
   geom_boxplot()
 
+# Look at outliers on the basement SF
+hp_training_data_outlier <- hp_training_data %>%
+  mutate(Outlier = case_when(TotalBsmtSF < 6000 ~ TRUE,
+                             TRUE ~ FALSE))
+
+hp_training_data %>%
+  select(SalePrice, TotalBsmtSF) %>%
+  filter(TotalBsmtSF != 0) %>%
+  ggplot(aes(x = TotalBsmtSF, y = SalePrice)) +
+  geom_point()
+hp_training_data_outlier %>%
+  select(SalePrice, Outlier, TotalBsmtSF) %>%
+  filter(TotalBsmtSF != 0) %>%
+  ggplot(aes(x = TotalBsmtSF, y = SalePrice, colour = Outlier)) +
+  geom_point()
+
+hp_training_data_outlier %>%
+  select(SalePrice, Outlier, `1stFlrSF`) %>%
+  filter(`1stFlrSF` != 0) %>%
+  ggplot(aes(x = `1stFlrSF`, y = SalePrice, colour = Outlier)) +
+  geom_point()
+
+hp_training_data_outlier %>%
+  ggplot(aes(x = Neighborhood, y = SalePrice)) +
+  geom_boxplot()
 

@@ -11,18 +11,6 @@ hp_data <- read_csv("./Kaggle/House Price Estimates/Data/train.csv",
                     col_types = types_mapping %>%
                       pull(class_type) %>%
                       paste(collapse = ""))
-str(hp_data)
-
-# # Converting to numeric values for the regression
-# dmy <- dummyVars(" ~ .",
-#                  data = hp_data,
-#                  na.action = 0)
-# hp_data_transformed <- data.frame(predict(dmy,
-#                                           newdata = hp_data)) %>%
-#   as_tibble() %>%
-#   replace_na(list(Alley.Grvl = 0, 
-#                   Alley.Pave = 0,
-#                   LotFrontage = 0))
 
 # Split the data into a training and validation dataset
 set.seed(524)
