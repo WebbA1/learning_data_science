@@ -68,6 +68,15 @@ hp_validation_data <- hp_data[-random_rows, ]
 All the subsequent data analysis will be conducted on the training dataset, to minimise the chance of data leakage.
 
 # Introduction to the Data
+## Cleaning the Data
+
+I need to clean the dataset before I begin attempting some simple analysis, modelling, and visualisation.
+There are several issues with the data: Firstly, there are a significant amount of missing thats that need resolves before modelling; 
+Secondly, there are some categorical features that need to be changed to a numeric value in order for me to be able to use them in the model.
+
+
+
+
 ## The Dependent Variable
 
 The variable that I will be modelling is **SalePrice**.
@@ -212,6 +221,9 @@ hp_training_data_dummy %>%
 ```
 
 ### PCA 
+
+
+
 
 ### Feature Importance 
 Hashing Encoding

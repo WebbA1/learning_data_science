@@ -9,8 +9,8 @@ dmy <- dummyVars(" ~ .",
 hp_training_data_dummy <- data.frame(predict(dmy,
                                              newdata = hp_training_data)) %>%
   as_tibble() %>%
-  replace_na(list(Alley.Grvl = 0, 
-                  Alley.Pave = 0,
+  replace_na(list(Alley_Grvl = 0, 
+                  Alley_Pave = 0,
                   LotFrontage = 0))
 
 
@@ -88,3 +88,34 @@ hp_training_data_outlier %>%
   ggplot(aes(x = Neighborhood, y = SalePrice)) +
   geom_boxplot()
 
+
+# PCA
+# The variance of some variables are NA. Why?
+prcomp(hp_training_data_dummy %>%
+         select(-Condition2_RRAn,
+                -Exterior1st_BrkComm,
+                -Exterior1st_CBlock,
+                -Exterior2nd_CBlock,
+                -HeatingQC_Po,
+                -YearBuilt_1882), scale = TRUE)
+
+
+prcomp(hp_training_data_dummy %>%
+         select(LotArea,
+                Neighborhood_NridgHt,
+                FullBath,
+                TotRmsAbvGrd,
+                GarageArea,
+                HeatingQC_Ex,
+                GrLivArea,
+                KitchenQual_Ex,
+                TotRmsAbvGrd,
+                Alley_Pave), scale = TRUE)
+
+
+test <- lapply(hp_training_data_dummy, function(column) {
+  count <- var(column)
+}) %>%
+  bind_rows() %>%
+  gather("key", "value") %>%
+  filter(is.na(value))
