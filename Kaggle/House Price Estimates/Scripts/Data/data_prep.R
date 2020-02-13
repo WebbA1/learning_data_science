@@ -10,26 +10,57 @@ numeric_columns <- names(which(sapply(hp_training_data %>% select(-Id), is.numer
 hp_training_data_char <- hp_training_data %>%
   select(-numeric_columns)
 str(hp_training_data_char)
-# We have 43 variables containing characters. How shhp_data we convert them to numeric? 
-hp_data %>% 
-  select(starts_with("Bsmt")) %>% 
-  gather("key", "value") %>%
+
+# How many contain NAs?
+char_NA_col <- hp_training_data_char %>%
+  gather("key", "value", -Id) %>%
   filter(is.na(value)) %>%
-  group_by(key) %>%
+  distinct(key) %>% 
+  arrange(key)
+# There are 16 features which contain NAs. 
+# 1. Ally ----
+# There are 1099 NAs, 33 Pave, and 36 Grvl.
+hp_training_data_char %>%
+  group_by(Alley) %>%
   tally()
-hp_data %>% 
+# I will convert the Alley feature into a factor. Therefore, we will create a dummy
+# for the Grvl and Pave instances. Ignoring the NAs. This is because the values in the 
+# feature are nominal. So an increasing value means nothing in this feature. 
+hp_training_data_fin <- hp_training_data %>%
+  mutate(Alley = as.factor(Alley))
+
+# Bsmt* ----
+# Deal with the 5 Bsmt features altogether as they will all be linked.
+hp_training_data_char %>%
   select(starts_with("Bsmt")) %>%
-  slice(333)
-missing_Bsmt <- hp_training_data_char %>% 
+  gather("key", "value") %>%
+  group_by(key, value) %>%
+  tally() %>%
+  filter(is.na(value))
+# All have 30 NAs apart from Exposure and FinType2, whom have 31
+hp_training_data_char %>%
   select(Id, starts_with("Bsmt")) %>%
-  gather("key", "value", -1) %>%
-  filter(is.na(value)) %>%
-  distinct(Id)
-hp_training_data_char %>% 
-  select(Id, starts_with("Bsmt")) %>%
-  filter(Id %in% missing_Bsmt$Id)
+  filter(is.na(BsmtFinType2)|is.na(BsmtExposure)) %>%
+  View()
+# BsmtExposure has one value that has been noted as not having a basement. 
+# However, the FinType says that the basement is unfinished. So maybe, the data collector
+# did not know what exposure the basement would have.
+# For the missing BsmtFinType2, this probably means that the basement does not 
+# have a second room in it.
+
+# For all of the Bsmt variables, we can apply an ordinal value to the characters. 
+# Where if the data is NA, we give it the number zero.
+data <- tibble(test = c("Gd", "Bd", "Gd", NA))
+data %>%
+  mutate(test = case_when(is.na(test) ~ 0,
+                          test == "Bd" ~ 1,
+                          test == "Gd" ~ 2))
 
 
+
+
+
+# We have 43 variables containing characters. How shhp_data we convert them to numeric? ----
 # Missing values in the numeric columns
 hp_training_data_num <- hp_training_data %>%
   select(Id, numeric_columns) %>%
