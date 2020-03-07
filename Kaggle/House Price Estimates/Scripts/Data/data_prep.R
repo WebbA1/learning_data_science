@@ -1,4 +1,4 @@
-# Correlation Analysis
+# Data Preparation ----
 library(Amelia)
 source("./Kaggle/House Price Estimates/Scripts/Data/import_data.R")
 # hp_training_data
@@ -39,6 +39,15 @@ hp_training_data_char %>%
   group_by(key, value) %>%
   tally() %>%
   filter(is.na(value))
+
+# Check if theyre all the same Ids
+hp_training_data_char %>%
+  select(Id, starts_with("Bsmt")) %>%
+  gather("key", "value", -1) %>%
+  filter(is.na(value)) %>%
+  group_by(Id) %>%
+  tally()
+
 # All have 30 NAs apart from Exposure and FinType2, whom have 31
 hp_training_data_char %>%
   select(Id, starts_with("Bsmt")) %>%
@@ -147,7 +156,7 @@ hp_training_data_fin <- hp_training_data_fin %>%
                                  FireplaceQu == "TA" ~ 3,
                                  FireplaceQu == "Gd" ~ 4,
                                  FireplaceQu == "Ex" ~ 5))
-# _6. Garage* ----
+# _6. Garage ----
 # how many NAs in each column for Garages
 hp_training_data_char %>%
   select(starts_with("Garage")) %>%
@@ -155,8 +164,71 @@ hp_training_data_char %>%
   group_by(key, value) %>%
   tally() %>%
   filter(is.na(value))
-# All the same, assume that they all have no garages
-# TODO Do Garage mapping
+# Check if theyre all the same Ids
+hp_training_data_char %>%
+  select(Id, starts_with("Garage")) %>%
+  gather("key", "value", -1) %>%
+  filter(is.na(value)) %>%
+  group_by(Id) %>%
+  tally()
+# Create mapping
+hp_training_data_fin <- hp_training_data_fin %>%
+  # GarageCond - Ordinal
+  mutate(GarageCond = case_when(is.na(GarageCond) ~ 0,
+                                GarageCond == "Po" ~ 1,
+                                GarageCond == "Fa" ~ 2,
+                                GarageCond == "TA" ~ 3,
+                                GarageCond == "Gd" ~ 4,
+                                GarageCond == "Ex" ~ 5)) %>%
+  # GarageFinish - Ordinal
+  mutate(GarageFinish = case_when(is.na(GarageFinish) ~ 0,
+                                  GarageFinish == "Unf" ~ 1,
+                                  GarageFinish == "RFn" ~ 2,
+                                  GarageFinish == "Fin" ~ 3)) %>%
+  # GarageQual - Ordinal
+  mutate(GarageQual = case_when(is.na(GarageQual) ~ 0,
+                                GarageQual == "Po" ~ 1,
+                                GarageQual == "Fa" ~ 2,
+                                GarageQual == "TA" ~ 3,
+                                GarageQual == "Gd" ~ 4,
+                                GarageQual == "Ex" ~ 5)) %>%
+  # GarageType - Nominal - Turn to dummy
+  mutate(GarageType = as.factor(GarageType))
+
+# _7. MasVnrType ----
+hp_training_data_char %>%
+  group_by(MasVnrType) %>%
+  tally()
+# 5 NAs
+hp_training_data %>%
+  filter(is.na(MasVnrType)) %>%
+  select(starts_with("MasVnr"))
+
+# Change them to None, but MasVnr Type will have to be nominal as no order
+hp_training_data_fin <- hp_training_data_fin %>%
+  replace_na(list(MasVnrType = "None")) %>%
+  mutate(MasVnrType = as.factor(MasVnrType))
+
+# _8. MiscFeature ----
+# NAs means none.
+hp_training_data_char %>%
+  group_by(MiscFeature) %>%
+  tally()
+# Nominal, so just ignore
+hp_training_data_fin <- hp_training_data_fin %>%
+  mutate(MiscFeature = as.factor(MiscFeature))
+# _9. PoolQC -----
+# NAs is no pool.
+hp_training_data_char %>%
+  group_by(PoolQC) %>%
+  tally()
+hp_training_data_fin <- hp_training_data_fin %>%
+  # PoolQC - Ordinal
+  mutate(PoolQC = case_when(is.na(PoolQC) ~ 0,
+                            PoolQC == "Fa" ~ 1,
+                            PoolQC == "TA" ~ 2,
+                            PoolQC == "Gd" ~ 3,
+                            PoolQC == "Ex" ~ 4))
 
 # Numeric ----
 # We have 43 variables containing characters. How shhp_data we convert them to numeric?
@@ -168,6 +240,32 @@ hp_training_data_num <- hp_training_data %>%
   group_by(key) %>%
   tally()
 
-# Columns with missing data
+# _1. GarageYrBlt ----
+# Not got a garage? Select all garages, check NAs for the char features
+hp_training_data %>%
+  select(Id, starts_with("Garage")) %>%
+  filter(is.na(GarageYrBlt))
+GarageYrBlt_mapping <- hp_training_data %>%
+  distinct(GarageYrBlt) %>%
+  arrange(GarageYrBlt) %>%
+  filter(!is.na(GarageYrBlt)) %>%
+  mutate(GarageYrBlt_ord = 1:nrow(.)) %>%
+  add_row(GarageYrBlt = NA, GarageYrBlt_ord = 0)
 
+hp_training_data_fin <- hp_training_data_fin %>%
+  left_join(GarageYrBlt_mapping, by = "GarageYrBlt") %>%
+  select(-GarageYrBlt)
+# Therefore, no garage, what do you put for the year? 0 
+# _2. LotFrontage* ----
+# Assume its Zero
+hp_training_data_fin <- hp_training_data_fin %>%
+  mutate(LotFrontage = case_when(is.na(LotFrontage) ~ 0,
+                                 TRUE ~ LotFrontage))
 
+# _3. MasVnrArea ----
+# Assume its Zero
+hp_training_data_fin <- hp_training_data_fin %>%
+  mutate(MasVnrArea = case_when(is.na(MasVnrArea) ~ 0,
+                                TRUE ~ MasVnrArea))
+
+# TODO What to do with all the character variables without NAs. ----
