@@ -6,7 +6,7 @@ source("./Kaggle/House Price Estimates/Scripts/Data/import_data.R")
 # Firstly, pull out all the columns that are numeric. We can conduct correlation on these.
 numeric_columns <- names(which(sapply(hp_training_data %>% select(-Id), is.numeric)))
 
-# Characters ----
+# NA Characters ----
 # Secondly, we can isolate non-numeric columns. How to make them numeric
 hp_training_data_char <- hp_training_data %>%
   select(-numeric_columns)
@@ -103,11 +103,11 @@ hp_training_data_fin <- hp_training_data_fin %>%
                                   BsmtFinType2 == "GLQ" ~ 6)) %>%
   # BsmtQual - Ordinal
   mutate(BsmtQual = case_when(is.na(BsmtQual) ~ 0,
-                              BsmtCond == "Po" ~ 1,
-                              BsmtCond == "Fa" ~ 2,
-                              BsmtCond == "TA" ~ 3,
-                              BsmtCond == "Gd" ~ 4,
-                              BsmtCond == "Ex" ~ 5))
+                              BsmtQual == "Po" ~ 1,
+                              BsmtQual == "Fa" ~ 2,
+                              BsmtQual == "TA" ~ 3,
+                              BsmtQual == "Gd" ~ 4,
+                              BsmtQual == "Ex" ~ 5))
 
 
 data <- tibble(test = c("Gd", "Bd", "Gd", NA))
@@ -230,7 +230,7 @@ hp_training_data_fin <- hp_training_data_fin %>%
                             PoolQC == "Gd" ~ 3,
                             PoolQC == "Ex" ~ 4))
 
-# Numeric ----
+# NA Numeric ----
 # We have 43 variables containing characters. How shhp_data we convert them to numeric?
 # Missing values in the numeric columns
 hp_training_data_num <- hp_training_data %>%
@@ -268,4 +268,85 @@ hp_training_data_fin <- hp_training_data_fin %>%
   mutate(MasVnrArea = case_when(is.na(MasVnrArea) ~ 0,
                                 TRUE ~ MasVnrArea))
 
-# TODO What to do with all the character variables without NAs. ----
+# Characters ----
+# Need to re-evaluate the columns which are character types
+remaining_char_columns <- names(which(sapply(hp_training_data_fin %>% select(-Id), is.character)))
+
+# _1. Nominal Character Features ----
+hp_training_data_fin <- hp_training_data_fin %>%
+  mutate(MSZoning = as.factor(MSZoning),
+         Street = as.factor(Street),
+         LandContour = as.factor(LandContour),
+         LotConfig = as.factor(LotConfig),
+         Neighborhood = as.factor(Neighborhood),
+         Condition1 = as.factor(Condition1),
+         Condition2 = as.factor(Condition2),
+         BldgType = as.factor(BldgType),
+         HouseStyle = as.factor(HouseStyle),
+         RoofStyle = as.factor(RoofStyle),
+         RoofMatl = as.factor(RoofMatl),
+         Exterior1st = as.factor(Exterior1st),
+         Exterior2nd = as.factor(Exterior2nd),
+         Foundation = as.factor(Foundation),
+         Heating = as.factor(Heating),
+         SaleType = as.factor(SaleType),
+         SaleCondition = as.factor(SaleCondition))
+# _2. Ordinal Character Features ----
+hp_training_data_fin <- hp_training_data_fin %>%
+  mutate(LotShape = case_when(LotShape == "IR3" ~ 0,
+                              LotShape == "IR2" ~ 1,
+                              LotShape == "IR1" ~ 2,
+                              LotShape == "Reg" ~ 3)) %>%
+  mutate(Utilities = case_when(Utilities == "ELO" ~ 0,
+                               Utilities == "NoSeWa" ~ 1,
+                               Utilities == "NoSewr" ~ 2,
+                               Utilities == "AllPub" ~ 3)) %>%
+  mutate(LandSlope = case_when(LandSlope == "Sev" ~ 0,
+                               LandSlope == "Mod" ~ 1,
+                               LandSlope == "Gtl" ~ 2)) %>%
+  mutate(ExterQual = case_when(ExterQual == "Po" ~ 0,
+                               ExterQual == "Fa" ~ 1,
+                               ExterQual == "TA" ~ 2,
+                               ExterQual == "Gd" ~ 3,
+                               ExterQual == "Ex" ~ 4)) %>%
+  mutate(ExterCond = case_when(ExterCond == "Po" ~ 0,
+                               ExterCond == "Fa" ~ 1,
+                               ExterCond == "TA" ~ 2,
+                               ExterCond == "Gd" ~ 3,
+                               ExterCond == "Ex" ~ 4)) %>%
+  mutate(HeatingQC = case_when(HeatingQC == "Po" ~ 0,
+                               HeatingQC == "Fa" ~ 1,
+                               HeatingQC == "TA" ~ 2,
+                               HeatingQC == "Gd" ~ 3,
+                               HeatingQC == "Ex" ~ 4)) %>%
+  mutate(CentralAir = case_when(CentralAir == "N" ~ 0,
+                                CentralAir == "Y" ~ 1)) %>%
+  mutate(KitchenQual = case_when(KitchenQual == "Po" ~ 0,
+                                 KitchenQual == "Fa" ~ 1,
+                                 KitchenQual == "TA" ~ 2,
+                                 KitchenQual == "Gd" ~ 3,
+                                 KitchenQual == "Ex" ~ 4)) %>%
+  mutate(Functional = case_when(Functional == "Sal" ~ 0,
+                                Functional == "Sev" ~ 1,
+                                Functional == "Maj2" ~ 2,
+                                Functional == "Maj1" ~ 3,
+                                Functional == "Mod" ~ 4,
+                                Functional == "Min2" ~ 5,
+                                Functional == "Min1" ~ 6,
+                                Functional == "Typ" ~ 7)) %>%
+  mutate(PavedDrive = case_when(PavedDrive == "N" ~ 0,
+                                PavedDrive == "P" ~ 1,
+                                PavedDrive == "Y" ~ 2))
+
+# Check the feature types ----
+# Find out how many are factors and then run dummy vars through them.
+str(hp_training_data_fin)
+# Converting to numeric values for the regression
+dmy <- dummyVars(" ~ .",
+                 data = hp_training_data_fin,
+                 na.action = 0, 
+                 sep = "_")
+hp_training_data_fin <- data.frame(predict(dmy,
+                                           newdata = hp_training_data_fin)) %>%
+  as_tibble() %>%
+  replace(is.na(.), 0)
