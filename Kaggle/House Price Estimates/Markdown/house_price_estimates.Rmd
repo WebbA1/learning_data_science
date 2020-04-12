@@ -14,13 +14,18 @@ knitr::opts_chunk$set(echo = TRUE)
 source("./www/ggplot_theme.R")
 library(tidyverse)
 library(caret)
+library(knitr)
+library(kableExtra)
+
+# Chunk settings
+echo_code = T
 ```
 
 # Introduction to the Project
 ## Objective of the Project
 
 I have downloaded a dataset containing the sale price of home in an area in the US between 2006 and 2010.
-Also included in the dataset are the features of each of the houses.
+Also, included in the dataset are the features of each of the houses.
 
 ## Beginning the Project
 To begin this project, I had a look at all of the variables contained in the data set
@@ -34,33 +39,30 @@ This will aid me in two different ways.
 * Secondly, once I begin the data analysis, I can easily sort out and analyse the continious features 
   and the discrete features.
 
-## Importing and first appearances of the data
-I will start by importing the mapping table I created to identify whether a variable should be imported
-as a factor or as an integer.
+## Importing and First Appearances
+To start off with I need data, so lets import the dataset and take a look at whats inside. 
 
-```{r importMappingTable, echo=T, results=F}
-# Type Mapping
-types_mapping <- read_csv("Inputs/identify_column_class_complete.csv")
+```{r importData, echo = echo_code, warning=F, message=F}
+hp_data <- read_csv("../Data/train.csv")
+
+# Present as an output
+kable(head(hp_data)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%")
 ```
 
-Now we can use the second column in the mapping table to help with importing the data.
-
-```{r importData}
-hp_data <- read_csv("Data/train.csv",
-                    col_types = types_mapping %>%
-                      pull(class_type) %>%
-                      paste(collapse = ""))
-head(hp_data)
-```
-
-There are 1460 instances and 80 features in the imported dataset.
+There are 1460 instances,, and 80 features in the imported dataset.
 As there is another separate dataset with the same features included to complete testing on, 
 I am going to split the imported data into an 80/20 split of training and validation. 
 This will allow me to train the model, and test it on an unknown dataset. 
 
-```{r splitTheData}
+```{r splitTheData, echo = echo_code}
 set.seed(524)
+
+# Select random rows for the validation dataset
 random_rows <- floor(sample(1:nrow(hp_data), size = nrow(hp_data) * 0.8))
+
+# Split into training and validation datasets
 hp_training_data <- hp_data[random_rows, ]
 hp_validation_data <- hp_data[-random_rows, ]
 ```
@@ -71,159 +73,92 @@ All the subsequent data analysis will be conducted on the training dataset, to m
 ## Cleaning the Data
 
 I need to clean the dataset before I begin attempting some simple analysis, modelling, and visualisation.
-There are several issues with the data: Firstly, there are a significant amount of missing thats that need resolves before modelling; 
-Secondly, there are some categorical features that need to be changed to a numeric value in order for me to be able to use them in the model.
+There are several issues with the data: 
+
+* Firstly, there are a significant amount of missing thats that need resolves before modelling.
+* Secondly, there are some categorical features that need to be changed to a numeric value in order for me to be able to use them in the model.
 
 
 
+## Missing Instances {.tabset}
+Lets begin by looking at the missing instances in the dataset.
+I can obtain a list of the features that have missing instances, and how many they are missing too.
 
-## The Dependent Variable
-
-The variable that I will be modelling is **SalePrice**.
-This is defined as the agreed price upon the sale of the house.
-
-```{r SalePriceSummary}
-summary(hp_training_data$SalePrice)
-```
-
-As we can see in the summary above, the average sales price of a house was *$180,921*, 
-while the range was between *$34,900* and *$755,00*. 
-There is quite a difference between the mean and the max value in a dataset.
-This can be seen a lot clearer when we look at the distibution of **SalePrice** 
-
-```{r histogramSalePrice, warning=FALSE}
+```{r missingDataCount, warning=F, echo = echo_code}
 hp_training_data %>%
-  select(SalePrice) %>%
-  ggplot(aes(x = SalePrice)) +
-  geom_histogram(bins = 100) 
+  gather("key", "value", -Id) %>%
+  filter(is.na(value)) %>%
+  group_by(key) %>% 
+  tally() %>%
+  kable() %>%
+  kable_styling()
 ```
 
-However, there is a positive skew on my data. I can log my dependent variable to remove this to make it normally distributed.
+Now I know which features are missing instances, I can go through each one and look at a solutions I can apply.
 
-```{r histogramSalePriceLog, warning=FALSE}
+### Alley
+The **Alley** feature has 1099 missing instances, 33 Pave, and 36 Grvl.
+
+```{r missingAlley, warning=F, echo = echo_code}
+# TODO Put into kable object, create kable functions for this.
 hp_training_data %>%
-  select(SalePrice) %>%
-  ggplot(aes(x = log(SalePrice))) +
-  geom_histogram(bins = 100) 
+  group_by(Alley) %>%
+  tally() %>%
+  kable() %>%
+  kable_styling()
 ```
 
-## The Features
-Now that I understand the dependent variable, lets see how the features interact with it
+As **Alley** as only two distinct instances, which do not have any ordering and are therefore not an ordinal sequence. 
+The best way to deal with **Alley** will be to convert it into a dummy variable. 
+This will involve creating two features from the original.
+One will when the instance has Pave, and the other will be when the instance has Grvl. 
+All the NAs will result in being 0 due to this method. We will be assuming there are only two options, as thats what the data tells us.
 
-### Correlation Analysis
-A simple correlation analysis will allow me to if there are any features that have 
-a large influence on my dependent variable
-However, I have two issues with my training data before I can conduct the correlation analysis.
+### Bsmt
 
-* As I have categorical values with character values in some of my features, these will need converting 
-  to be numeric values. This can be completed by converting these features into dummy
-  variables. This means creating a new feature for each of the unique values in the feature,
-  and providing it with the value of one if that instance contains that value, while 0 if it 
-  is not. I will use the function in `dummyVars` located in the `Caret` package to conduct this conversion
+I've grouped all the **Bsmt** features into one, so they can be analysed for NAs altogether.
+Lets look at how many missing instances there are for each **Bsmt** feature.
 
-* There are also missing values in my dataset. In order to solve this, I will replace
-  all *NAs* in the dataset with 0.
-  This is a very simple way to deal with the issue of *NAs*, and can be completed in `dummyVars` too.
-
-  
-```{r correlationPrep, warning = FALSE}
-dmy <- dummyVars(" ~ .",
-                 data = hp_training_data,
-                 sep = "_",
-                 na_action = 0)
-
-hp_training_data_dummy <- data.frame(predict(dmy,
-                                             newdata = hp_training_data)) %>%
-  as_tibble()
-```
-
-Now I can conduct the correlation analysis, and see which features have the largest effect on the dependent variable.
-Once I have the results from the test, I can create a histgram to visualise any features with a high correlation to the dependent variable
-
-```{r correlationAnalysis}
-correlation_outputs <- cor(x = hp_training_data_dummy %>%
-                             select(SalePrice),
-                           y = hp_training_data_dummy %>%
-                             select(-Id, -SalePrice))
-
-correlation_outputs %>%
-  as_tibble() %>%
+```{r missingBsmt, warning= F, echo=echo_code}
+hp_training_data %>%
+  select(starts_with("Bsmt")) %>%
   gather("key", "value") %>%
-  ggplot(aes(x = value)) +
-  geom_histogram(bins = 50)
-#knitr::kable(correlation_outputs)
-```
-
-From the distribution below, lets look at at features with a correlation of 0.4 or above.
-
-```{r selectingCorrelatingFeatures}
-# Select the correlation values that are greater than |0.4|
-knitr::kable(correlation_outputs %>%
-               as_tibble() %>%
-               gather("Feature", "Correlation") %>%
-               filter(abs(Correlation) >= 0.4))
+  group_by(key, value) %>%
+  tally() %>%
+  filter(is.na(value)) %>%
+  kable() %>%
+  kable_styling()
 ```
 
 
-### Visualisation
-I now have a list a features to look at and further determine their relationship with the dependent variable.
+From the table above, I've noticed that two features have an extra NA instance, 
+**BsmtExposure** and **BsmtFinType2**. Lets have a look and see where they appear in the data.
+I can do this by checking them againest the Id of the instances.
 
-#### Total Basement Square Footage
-The first feature I will look at is the total square footage of a basement.
-Using a scatter plot is useful for seeing the relationship between the dependent variable and the select feature.
-Firstly, I should remove the zeros from the basement feature. 
-We are not interested in seeing house homes without basements affect the price of a house.
-
-```{r TotalBsmtSFScatter, warning=F}
+```{r BsmtIdCheck, warning=F, echo=echo_code}
 hp_training_data %>%
-  select(SalePrice, TotalBsmtSF) %>%
-  filter(TotalBsmtSF != 0) %>%
-  ggplot(aes(x = TotalBsmtSF, y = SalePrice)) +
-  geom_point()
+  select(Id, starts_with("Bsmt")) %>%
+  gather("key", "value", -1) %>%
+  filter(is.na(value)) %>%
+  group_by(Id) %>%
+  tally() %>%
+  kable() %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "300px")
 ```
 
-There is a clear positive correlation between `SalePrice` and `TotalBsmtSF`.
-However, there seems to be some outliers that could skew our data. 
-I will take a closer look at these instances, and see why they are skewing this feature.
+Lets filter the **Bsmt** features for NAs, but only use **BsmtExposure** and **BsmtFinType2**.
 
-```{r TotalBsmtSFBoxPlot, warning=F}
+```{r BsmtAllNAs, warning=F, echo=echo_code}
 hp_training_data %>%
-  select(SalePrice, TotalBsmtSF) %>%
-  filter(TotalBsmtSF != 0) %>%
-  ggplot(aes(x = TotalBsmtSF, y = SalePrice)) +
-  geom_boxplot()
+  select(Id, starts_with("Bsmt")) %>%
+  filter(is.na(BsmtFinType2)|is.na(BsmtExposure)) %>%
+  kable() %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "300px")
 ```
 
-Is it the roof?
-
-#### Overall Quality
-<!-- # ```{r OverallQualityBoxPlot} -->
-<!-- # hp_training_data_dummy %>% -->
-<!-- #   select(SalePrice, OverallQual_8, OverallQual_9) %>% -->
-<!-- #   gather("Feature", "Value", - SalePrice) %>% -->
-<!-- #   mutate(Value = factor(Value, levels = 0:1), -->
-<!-- #          Feature = factor(Feature, levels = paste0("OverallQual_", 1:10))) %>% -->
-<!-- #   ggplot(aes(x = Value, y = SalePrice)) + -->
-<!-- #   facet_wrap(~Feature) + -->
-<!-- #   geom_boxplot() -->
-<!-- # ``` -->
-
-
-```{r OverallQualityBoxAllPlot}
-hp_training_data_dummy %>%
-  select(SalePrice, starts_with("OverallQual")) %>%
-  gather("Feature", "Value", - SalePrice) %>%
-  mutate(Value = factor(Value, levels = 0:1),
-         Feature = factor(Feature, levels = paste0("OverallQual_", 1:10))) %>%
-  ggplot(aes(x = Value, y = SalePrice, colour = Value)) +
-  facet_wrap(~Feature) +
-  geom_boxplot()
-```
-
-### PCA 
 
 
 
 
-### Feature Importance 
-Hashing Encoding

@@ -109,17 +109,6 @@ hp_training_data_fin <- hp_training_data_fin %>%
                               BsmtQual == "Gd" ~ 4,
                               BsmtQual == "Ex" ~ 5))
 
-
-data <- tibble(test = c("Gd", "Bd", "Gd", NA))
-data %>%
-  mutate(test = case_when(is.na(test) ~ 0,
-                          test == "Bd" ~ 1,
-                          test == "Gd" ~ 2))
-
-
-
-
-
 # _3. Electrical* ----
 hp_training_data_char %>%
   group_by(Electrical) %>%
