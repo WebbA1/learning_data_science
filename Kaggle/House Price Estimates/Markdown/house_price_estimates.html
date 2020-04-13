@@ -3596,7 +3596,7 @@ NA
 </tr>
 </tbody>
 </table>
-<p>From the table above, I’ve noticed that two features have an extra NA instance, <strong>BsmtExposure</strong> and <strong>BsmtFinType2</strong>. Lets have a look and see where they appear in the data. I can do this by checking them againest the Id of the instances.</p>
+<p>From the table above, I’ve noticed that two features have an extra NA instance, <strong>BsmtExposure</strong> and <strong>BsmtFinType2</strong>. Lets have a look and see where they appear in the data.</p>
 <pre class="r"><code>hp_training_data %&gt;%
   select(Id, starts_with(&quot;Bsmt&quot;)) %&gt;%
   gather(&quot;key&quot;, &quot;value&quot;, -1) %&gt;%
@@ -3878,10 +3878,18 @@ n
 </tbody>
 </table>
 </div>
-<p>Lets filter the <strong>Bsmt</strong> features for NAs, but only use <strong>BsmtExposure</strong> and <strong>BsmtFinType2</strong>.</p>
-<pre class="r"><code>hp_training_data %&gt;%
+<p>Now I know which Ids contain the NAs, i can filter my dataset by these Ids and see why <strong>BsmtExposure</strong> and <strong>BsmtFinType2</strong> have an extra NA.</p>
+<pre class="r"><code>BsmtIdNAs &lt;- hp_training_data %&gt;%
   select(Id, starts_with(&quot;Bsmt&quot;)) %&gt;%
-  filter(is.na(BsmtFinType2)|is.na(BsmtExposure)) %&gt;%
+  gather(&quot;key&quot;, &quot;value&quot;, -1) %&gt;%
+  filter(is.na(value)) %&gt;%
+  distinct(Id) %&gt;%
+  pull(Id)
+# TODO Highlight the NAs in the table.
+hp_training_data %&gt;%
+  select(Id, starts_with(&quot;Bsmt&quot;)) %&gt;%
+  filter(Id %in% BsmtIdNAs) %&gt;%
+  arrange(Id) %&gt;%
   kable() %&gt;%
   kable_styling() %&gt;%
   scroll_box(width = &quot;100%&quot;, height = &quot;300px&quot;)</code></pre>
@@ -3927,7 +3935,7 @@ BsmtHalfBath
 <tbody>
 <tr>
 <td style="text-align:right;">
-898
+18
 </td>
 <td style="text-align:left;">
 NA
@@ -3955,286 +3963,6 @@ NA
 </td>
 <td style="text-align:right;">
 0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-706
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1217
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-343
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-521
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-260
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-949
-</td>
-<td style="text-align:left;">
-Gd
-</td>
-<td style="text-align:left;">
-TA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-Unf
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-Unf
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-936
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-737
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-333
-</td>
-<td style="text-align:left;">
-Gd
-</td>
-<td style="text-align:left;">
-TA
-</td>
-<td style="text-align:left;">
-No
-</td>
-<td style="text-align:left;">
-GLQ
-</td>
-<td style="text-align:right;">
-1124
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-479
-</td>
-<td style="text-align:right;">
-1603
-</td>
-<td style="text-align:right;">
-1
 </td>
 <td style="text-align:right;">
 0
@@ -4277,7 +4005,7 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-18
+103
 </td>
 <td style="text-align:left;">
 NA
@@ -4347,7 +4075,7 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-750
+260
 </td>
 <td style="text-align:left;">
 NA
@@ -4382,7 +4110,42 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-1091
+333
+</td>
+<td style="text-align:left;">
+Gd
+</td>
+<td style="text-align:left;">
+TA
+</td>
+<td style="text-align:left;">
+No
+</td>
+<td style="text-align:left;">
+GLQ
+</td>
+<td style="text-align:right;">
+1124
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+479
+</td>
+<td style="text-align:right;">
+1603
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+343
 </td>
 <td style="text-align:left;">
 NA
@@ -4452,7 +4215,7 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-779
+521
 </td>
 <td style="text-align:left;">
 NA
@@ -4487,7 +4250,7 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-1046
+533
 </td>
 <td style="text-align:left;">
 NA
@@ -4523,76 +4286,6 @@ NA
 <tr>
 <td style="text-align:right;">
 534
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1413
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-985
 </td>
 <td style="text-align:left;">
 NA
@@ -4697,7 +4390,7 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-1049
+706
 </td>
 <td style="text-align:left;">
 NA
@@ -4732,7 +4425,7 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-533
+737
 </td>
 <td style="text-align:left;">
 NA
@@ -4767,7 +4460,42 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-1036
+750
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+779
 </td>
 <td style="text-align:left;">
 NA
@@ -4837,77 +4565,112 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-1219
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1050
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
 895
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+898
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+949
+</td>
+<td style="text-align:left;">
+Gd
+</td>
+<td style="text-align:left;">
+TA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Unf
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+Unf
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+936
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+985
 </td>
 <td style="text-align:left;">
 NA
@@ -4977,7 +4740,217 @@ NA
 </tr>
 <tr>
 <td style="text-align:right;">
-103
+1036
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1046
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1049
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1050
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1091
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1217
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1219
 </td>
 <td style="text-align:left;">
 NA
@@ -5045,9 +5018,72 @@ NA
 0
 </td>
 </tr>
+<tr>
+<td style="text-align:right;">
+1413
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
 </tbody>
 </table>
 </div>
+<p>The extra NA for <strong>BsmtExposure</strong> is at Id 949. Looking at the other basement features, I can see that there is clearly a basement being built/renovated, as <strong>BsmtFinType1</strong> is saying its unfinished. This leads me to believe the data collector was unsure about what exposure the basement would have. Therefore, it is difficult to decide what to do to this instance. Do we remove it as we are unsure about the data, or do we apply zero?</p>
+<p>For now, I will apply the value of 0.</p>
+<p>As for extra NA in <strong>BsmtFinType2</strong>, this appears in Id 333. As <strong>BsmtFinType1</strong> has a value, and there is a value in <strong>BsmtFinSF2</strong>, I will assume that the second room is unfinished.</p>
+<p>For all of the Bsmt variables, I can apply an ordinal value to the characters. If the data is NA, I will apply the value of zero under the assumption that the property is missing a basemen due to <strong>BsmtFinSF</strong> is 0.</p>
+</div>
+<div id="electrical" class="section level3">
+<h3>Electrical</h3>
+</div>
+<div id="fence" class="section level3">
+<h3>Fence</h3>
+</div>
+<div id="fireplacequ" class="section level3">
+<h3>FireplaceQu</h3>
+</div>
+<div id="garage" class="section level3">
+<h3>Garage</h3>
+</div>
+<div id="lotfrontage" class="section level3">
+<h3>LotFrontage</h3>
+</div>
+<div id="masvnr" class="section level3">
+<h3>MasVnr</h3>
+</div>
+<div id="miscfeature" class="section level3">
+<h3>MiscFeature</h3>
+</div>
+<div id="poolqc" class="section level3">
+<h3>PoolQC</h3>
 </div>
 </div>
 </div>

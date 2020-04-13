@@ -133,7 +133,6 @@ hp_training_data %>%
 
 From the table above, I've noticed that two features have an extra NA instance, 
 **BsmtExposure** and **BsmtFinType2**. Lets have a look and see where they appear in the data.
-I can do this by checking them againest the Id of the instances.
 
 ```{r BsmtIdCheck, warning=F, echo=echo_code}
 hp_training_data %>%
@@ -147,18 +146,55 @@ hp_training_data %>%
   scroll_box(width = "100%", height = "300px")
 ```
 
-Lets filter the **Bsmt** features for NAs, but only use **BsmtExposure** and **BsmtFinType2**.
+Now I know which Ids contain the NAs, i can filter my dataset by these Ids and see why 
+**BsmtExposure** and **BsmtFinType2** have an extra NA.
 
 ```{r BsmtAllNAs, warning=F, echo=echo_code}
+BsmtIdNAs <- hp_training_data %>%
+  select(Id, starts_with("Bsmt")) %>%
+  gather("key", "value", -1) %>%
+  filter(is.na(value)) %>%
+  distinct(Id) %>%
+  pull(Id)
+# TODO Highlight the NAs in the table.
 hp_training_data %>%
   select(Id, starts_with("Bsmt")) %>%
-  filter(is.na(BsmtFinType2)|is.na(BsmtExposure)) %>%
+  filter(Id %in% BsmtIdNAs) %>%
+  arrange(Id) %>%
   kable() %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "300px")
 ```
 
+The extra NA for **BsmtExposure** is at Id 949. Looking at the other basement features, 
+I can see that there is clearly a basement being built/renovated, as **BsmtFinType1** is saying its unfinished.
+This leads me to believe the data collector was unsure about what exposure the basement would have. 
+Therefore, it is difficult to decide what to do to this instance. 
+Do we remove it as we are unsure about the data, or do we apply zero?
 
+For now, I will apply the value of 0.
+
+As for extra NA in **BsmtFinType2**, this appears in Id 333. As **BsmtFinType1** has a value, 
+and there is a value in **BsmtFinSF2**, I will assume that the second room is unfinished.
+
+For all of the Bsmt variables, I can apply an ordinal value to the characters. 
+If the data is NA, I will apply the value of zero under the assumption that the property is missing a basemen due to **BsmtFinSF** is 0.
+
+### Electrical
+
+### Fence
+
+### FireplaceQu
+
+### Garage
+
+### LotFrontage
+
+### MasVnr
+
+### MiscFeature
+
+### PoolQC
 
 
 
