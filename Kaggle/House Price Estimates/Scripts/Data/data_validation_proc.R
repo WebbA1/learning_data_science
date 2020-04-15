@@ -1,6 +1,6 @@
 # Create Modelling Dataset ----
 # Mapping table for GarageYrBlt
-GarageYrBlt_mapping <- hp_training_data %>%
+GarageYrBlt_mapping <- hp_data %>%
   distinct(GarageYrBlt) %>%
   arrange(GarageYrBlt) %>%
   filter(!is.na(GarageYrBlt)) %>%
@@ -8,7 +8,7 @@ GarageYrBlt_mapping <- hp_training_data %>%
   add_row(GarageYrBlt = NA, GarageYrBlt_ord = 0)
 
 
-hp_training_data_fin <- hp_training_data %>%
+hp_validation_data_fin <- hp_validation_data %>%
   # BsmtCond - Ordinal
   mutate(BsmtCond = case_when(is.na(BsmtCond) ~ 0,
                               BsmtCond == "Po" ~ 1,
@@ -173,11 +173,12 @@ hp_training_data_fin <- hp_training_data %>%
   select(-GarageYrBlt)
 
 # Create dummy variables for final dataset ----
+# TODO Issue with one factor not having many levels
 dmy <- dummyVars(" ~ .",
-                 data = hp_training_data_fin,
+                 data = hp_validation_data_fin,
                  na.action = 0, 
                  sep = "_")
-hp_training_data_fin <- data.frame(predict(dmy,
-                                           newdata = hp_training_data_fin)) %>%
+hp_validation_data_fin <- data.frame(predict(dmy,
+                                           newdata = hp_validation_data_fin)) %>%
   as_tibble() %>%
   replace(is.na(.), 0)
