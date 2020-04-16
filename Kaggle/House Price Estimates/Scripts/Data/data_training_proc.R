@@ -6,9 +6,23 @@ GarageYrBlt_mapping <- hp_data %>%
   filter(!is.na(GarageYrBlt)) %>%
   mutate(GarageYrBlt_ord = 1:nrow(.)) %>%
   add_row(GarageYrBlt = NA, GarageYrBlt_ord = 0)
+# Mapping table for YearBuilt
+YearBuilt_mapping <- hp_data %>%
+  distinct(YearBuilt) %>%
+  arrange(YearBuilt) %>%
+  filter(!is.na(YearBuilt)) %>%
+  mutate(YearBuilt_ord = 1:nrow(.)) %>%
+  add_row(YearBuilt = NA, YearBuilt_ord = 0)
+# Mapping table for YearRemodAdd
+YearRemodAdd_mapping <- hp_data %>%
+  distinct(YearRemodAdd) %>%
+  arrange(YearRemodAdd) %>%
+  filter(!is.na(YearRemodAdd)) %>%
+  mutate(YearRemodAdd_ord = 1:nrow(.)) %>%
+  add_row(YearRemodAdd = NA, YearRemodAdd_ord = 0)
 
 
-hp_training_data_fin <- hp_training_data %>%
+hp_data_fin <- hp_data %>%
   # BsmtCond - Ordinal
   mutate(BsmtCond = case_when(is.na(BsmtCond) ~ 0,
                               BsmtCond == "Po" ~ 1,
@@ -170,14 +184,18 @@ hp_training_data_fin <- hp_training_data %>%
          SaleType = as.factor(SaleType),
          SaleCondition = as.factor(SaleCondition)) %>%
   left_join(GarageYrBlt_mapping, by = "GarageYrBlt") %>%
-  select(-GarageYrBlt)
+  select(-GarageYrBlt) %>%
+  left_join(YearBuilt_mapping, by = "YearBuilt") %>%
+  select(-YearBuilt) %>% 
+  left_join(YearRemodAdd_mapping, by = "YearRemodAdd") %>%
+  select(-YearRemodAdd)
 
 # Create dummy variables for final dataset ----
 dmy <- dummyVars(" ~ .",
-                 data = hp_training_data_fin,
+                 data = hp_data_fin,
                  na.action = 0, 
                  sep = "_")
-hp_training_data_fin <- data.frame(predict(dmy,
-                                           newdata = hp_training_data_fin)) %>%
+hp_data_fin <- data.frame(predict(dmy,
+                                  newdata = hp_data_fin)) %>%
   as_tibble() %>%
   replace(is.na(.), 0)
