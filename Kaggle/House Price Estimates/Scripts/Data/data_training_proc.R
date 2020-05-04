@@ -191,11 +191,11 @@ hp_data_fin <- hp_data %>%
   select(-YearRemodAdd)
 
 # Create dummy variables for final dataset ----
+# TODO NAs appearing in the dummy vars
 dmy <- dummyVars(" ~ .",
                  data = hp_data_fin,
                  na.action = 0, 
                  sep = "_")
 hp_data_fin <- data.frame(predict(dmy,
                                   newdata = hp_data_fin)) %>%
-  as_tibble() %>%
-  replace(is.na(.), 0)
+  as_tibble()

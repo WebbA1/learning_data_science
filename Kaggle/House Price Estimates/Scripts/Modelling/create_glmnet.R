@@ -7,9 +7,16 @@ str(hp_data_fin)
 
 # Split the data into a training and validation dataset
 set.seed(524)
-random_rows <- floor(sample(1:nrow(hp_data_fin), size = nrow(hp_data_fin) * 0.8))
-hp_training_data <- hp_data_fin[random_rows, ]
-hp_validation_data <- hp_data_fin[-random_rows, ]
+hp_testing_data <- hp_data_fin %>%
+  filter(!is.na(SalePrice))
+hp_data_fin_train_only <- hp_data_fin %>%
+  filter(is.na(SalePrice))
+
+
+random_rows <- floor(sample(1:nrow(hp_data_fin_train_only), 
+                            size = nrow(hp_data_fin_train_only) * 0.8))
+hp_training_data <- hp_data_fin_train_only[random_rows, ]
+hp_validation_data <- hp_data_fin_train_only[-random_rows, ]
 
 
 # Parameter Tuning
